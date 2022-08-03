@@ -1,0 +1,2 @@
+.eslintrc.js
+# src/main *   //prašau eslint ignoruoti visus failus, kurie yra src folderyje ir prasideda pavadinimu main" " ir * reiškia nesvarbu, kaip baigiasi, tai reiškia pvz.:main.ts neignoruos, o main copy.ts ignoruos
