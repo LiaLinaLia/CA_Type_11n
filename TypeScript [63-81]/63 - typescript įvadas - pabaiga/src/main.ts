@@ -1,16 +1,9 @@
-const add = (a: number, b: number): number => a + b;
+const numbers: number[] = [1, 2, 3, 4, 5, 6];
 
-let a: number = 7;
-let b: number = 8;
+// const doubleNumbers = numbers.map(x => {
+//  return x * 2;
+// });
+// pvz: const adsfsg = () => /* return */ x *2;  //eslint sako, kad kai aprašant lambda išraiška aprašoma tik viena komanda, return yra numanomas ir tos vienos komandoos rezultatas automatiškai grąžinamas, dėl to galima susitrumpinti užrašymą
 
-//const add = (a:number, b:number): number => a + b;
-//console.log(add(a,b));
-//console.log(add(3, 10));
-
-console.log({ a, b });
-console.log({
-  'add(a, b)': add(a, b),
-  'add(3, 10)': add(3, 10),
-});
-
-console.log('labas');
+const doubleNumbers = numbers.map((num) => num * 2);
+console.log(doubleNumbers);
