@@ -271,6 +271,9 @@ console.groupEnd();
 //  * Po skiriamojo ženklo tarpas, o prieš skiriamajį ženklą nėra tarpo (skiriamieji ženklai: .,!?)
 //  * Bet koks kiekis tarpų pakeičiamas vienu tarpu
 //  * Pašalinti tarpus aplink visą tekstą
+
+//aiškina 08.04 paskaitos pačiam gale.
+
 console.groupCollapsed('9. Sukurkite funkciją, kuri taiso pastraipos klaidas');
 {
   type StringModifier = (str: string) => string;
@@ -336,6 +339,8 @@ console.groupCollapsed('9. Sukurkite funkciją, kuri taiso pastraipos klaidas');
       .map(capitalize);
 
     result = composeText({ ...decomposedText, sentences });
+    // result = composeText({ sentences, separators: decomposedText.separators });
+
 
     return result;
   };

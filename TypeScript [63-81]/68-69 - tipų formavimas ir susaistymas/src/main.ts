@@ -140,21 +140,31 @@ console.group('1. Tipų indeksai');
   // 10 min
   console.groupCollapsed('1.1. Sukurkite tipą Address naudodami tipą User. Parašykite funkciją "getUserAddress", kuri priima vartotoją (User) ir grąžina vartotojo adresą (Address)');
   {
-    // hint  User[] => Array.prototype.map(getUserAddress) => Address[]
+    type Address = User['address'];
+    const getAddress = ({ address }: User): Address => address;
+
+    const addresses: Address[] = users.map(getAddress);
+
+    console.table(addresses);
   }
   console.groupEnd();
 
   // 5 min
   console.groupCollapsed('1.2. Sukurkite tipą Company naudodami tipą User. Parašykite funkciją "getUserCompany", kuri priima vartotoją (User) ir grąžina vartotojo kompaniją (Company)');
   {
+    type Company = User['company'];
+    const getCompany = ({ company }: User): Company => company;
 
+    const companies: Company[] = users.map(getCompany);
+
+    console.table(companies);
   }
   console.groupEnd();
 }
 console.groupEnd();
 
 // 25 min
-console.group('2. Pagalbiniai tipai');
+console.groupCollapsed('2. Pagalbiniai tipai');
 {
   type BMWCar = {
     brand: 'BMW',
@@ -177,14 +187,44 @@ console.group('2. Pagalbiniai tipai');
   // 10 min
   console.groupCollapsed('2.1. Sukurkite funkciją "selectWithColor" kurti atrenka visas mašinas turinčias aprašytą spalvą, ir aprašykite joms tipą BMWCarFull su visomis privalomomis savybėmis');
   {
+    type BMWCarFull = Required<BMWCar>;
 
+    const selectWithColor = (allCars: BMWCar[], color: string): BMWCarFull[] => {
+      const filteredCars = allCars.filter((car) => car.color === color) as BMWCarFull[];
+
+      return filteredCars;
+    };
+
+    const redCars = selectWithColor(cars, 'red');
+    const blackCars = selectWithColor(cars, 'black');
+
+    console.log({
+      redCars,
+      blackCars,
+    });
   }
   console.groupEnd();
 
   // 15 min
-  console.groupCollapsed('2.2. Sukurkite funkciją "refactorBmwCar" kurti perkuria mašiną.  Pašalina mašinos savybė brand, o model savybę pakeičia taip, kad joje būtų markė ir modelis atskirta tarpu. Visos kitos savybės paliekamos tokios pat');
+  console.group('2.2. Sukurkite funkciją "refactorBmwCar" kurti perkuria mašiną.  Pašalina mašinos savybė brand, o model savybę pakeičia taip, kad joje būtų markė ir modelis atskirta tarpu. Visos kitos savybės paliekamos tokios pat');
   {
+    type BMWCarRefactored = Omit<BMWCar, 'brand' | 'model'> & {
+      model: `${BMWCar['brand']} ${BMWCar['model']}`
+    }
 
+    // type BMWCarRefactored = {
+    //   [Key in keyof BMWCar as Key extends 'brand' ? never : Key]: Key extends 'model'
+    //   ? `${BMWCar['brand']} ${BMWCar['model']}`
+    //   : BMWCar[Key]
+    // }
+
+    const refactorCar = ({ brand, model, ...rest }: BMWCar): BMWCarRefactored => ({
+      model: `${brand} ${model}`,   // `${BMVCar['brand']} ${BMVCar['model']}`, 
+      ...rest,
+    });
+
+    const refactoredCars = cars.map(refactorCar);
+    console.table(refactoredCars);
   }
   console.groupEnd();
 }
@@ -203,27 +243,89 @@ console.group('3. Tipų apjungimas ir “&” sankirtos operatorius');
   };
 
   // 30 min
-  console.groupCollapsed('3.1. Sukurkite tipą UserRegistration naudodami tipą User. UserRegistration tipas turi turėti papildomas ir privalomas savybes emailConfirmation ir passwordConfirmation, bei pašalintą savybę cartItems. Sukūrus tipą UserRegistration sukurkite funkciją "registerUser" kuri priimtų UserRegistration tipo parametrą ir grąžintų User tipo objektą, jeigu sutampa email su emailConfirmation ir password su passwordConfirmation. Jeigu pakartotinės savybės nesutampa turi būti grąžinama "null" reikšmė');
+  console.group('3.1. Sukurkite tipą UserRegistration naudodami tipą User. UserRegistration tipas turi turėti papildomas ir privalomas savybes emailConfirmation ir passwordConfirmation, bei pašalintą savybę cartItems. Sukūrus tipą UserRegistration sukurkite funkciją "registerUser" kuri priimtų UserRegistration tipo parametrą ir grąžintų User tipo objektą, jeigu sutampa email su emailConfirmation ir password su passwordConfirmation. Jeigu pakartotinės savybės nesutampa turi būti grąžinama "null" reikšmė');
   /* Hints:
     * Omit<Type, Keys>
     * X extends Y || &
     * Type index'es
   */
   {
+    // interface UserRegistration extends Omit<User, 'cartItems'> {
+    //   emailConfirmation: User['email'],
+    //   passwordConfirmation: User['password'],
+    // }
 
+    type UserRegistration = Omit<User, 'cartItems'> & {
+      emailConfirmation: User['email'],
+      passwordConfirmation: User['password'],
+    }
+
+    const registerUser = ({
+      email,
+      emailConfirmation,
+      password,
+      passwordConfirmation,
+      ...userProps
+    }: UserRegistration): User | null => {
+      if (email === emailConfirmation && password === passwordConfirmation) {
+        return {
+          ...userProps,
+          email,
+          password,
+          cartItems: [],
+        };
+      }
+
+      return null;
+    };
+
+    const userRegistrationValid: UserRegistration = {
+      surname: 'Dykuminis',
+      email: 'dziungliu.sniurs@maurum.lt',
+      emailConfirmation: 'dziungliu.sniurs@maurum.lt',
+      password: 'Tarzanas123',
+      passwordConfirmation: 'Tarzanas123',
+    };
+
+    const userRegistrationInvalid: UserRegistration = {
+      name: 'Skrebutis',
+      email: 'skrebutis.varsketis@sviestuotas.lt',
+      emailConfirmation: 'skrebutis.varsketis@sviestuotas.lt',
+      password: 'Su200gGrietines',
+      passwordConfirmation: 'Su250gGrietines',
+    };
+
+    console.log('Registration atempt:', JSON.stringify(userRegistrationValid, null, 4));
+    const registrationResult1 = registerUser(userRegistrationValid);
+    console.log('Result:', registrationResult1);
+
+    console.log('Registration atempt:', JSON.stringify(userRegistrationInvalid, null, 4));
+    const registrationResult2 = registerUser(userRegistrationInvalid);
+    console.log('Result:', registrationResult2);
   }
   console.groupEnd();
 }
 console.groupEnd();
 
 // 50 min
-console.group('4. Tipų susaistymas');
+console.groupCollapsed('4. Tipų susaistymas');
 {
   type Accommodation = {
     address: string,
     squares: number,
     type: 'Flat' | 'House' | 'Cottage',
   }
+
+  type AccommodationSetters = {
+    // eslint-disable-next-line no-unused-vars
+    [Key in keyof Accommodation as `set${Capitalize<Key>}`]: (value: Accommodation[Key]) => void
+  }
+
+  type AccommodationGetters = {
+    [Key in keyof Accommodation as `get${Capitalize<Key>}`]: () => Accommodation[Key]
+  }
+
+  type EncapsulatedAccomodation = AccommodationSetters & AccommodationGetters;
 
   // 50 min
   console.groupCollapsed('4.1. Turite tipą Accomodation, jo visos savybės yra pasiekiamos ir keičiamos tiesiogiai. Naudodami saistymo metodologiją sukurkite tipą EncapsulatedAccomodation. Panaudokite kiekvieną Accomodation tipo savybę, kad performuoti ją į setterio ir getterrio funkcijų poras. Sukūrę tipą, aprašykite funkciją "encapsulateAccomodation", kuri priimtų Accomodation tipo parametrą ir grąžintų EncapsulatedAccomodation objektą su veikiančiais setteriais ir getteriais.');
@@ -237,8 +339,61 @@ console.group('4. Tipų susaistymas');
      * OOP: encapsulation
    */
   {
+    const encapsulateAccomodation = (accomodation: Accommodation): EncapsulatedAccomodation => {
+      let { address, squares, type } = accomodation;
 
+      return {
+        setAddress: (value) => { address = value; },
+        setSquares: (value) => { squares = value; },
+        setType: (value) => { type = value; },
+        getAddress: () => address,
+        getSquares: () => squares,
+        getType: () => type,
+      };
+    };
+
+    const accomodation1: Accommodation = {
+      address: 'Bernužėlių g. 17, Rokelių kaimas, Pasvalio raj.',
+      squares: 224,
+      type: 'House',
+    };
+    console.log('Encapsulating accomodation1:', JSON.stringify(accomodation1, null, 4));
+    const encapsulatedAccomodation1 = encapsulateAccomodation(accomodation1);
+    console.log('Changing properties using setters...');
+    encapsulatedAccomodation1.setAddress('Bernužėlių g. 17, Rokelių kaimas, Biržų raj.');
+    encapsulatedAccomodation1.setSquares(180);
+    console.log('using getters after changes', {
+      'getAddress()': encapsulatedAccomodation1.getAddress(),
+      'getSquares()': encapsulatedAccomodation1.getSquares(),
+      'getType()': encapsulatedAccomodation1.getType(),
+    });
+    console.log('-----');
+
+    const accomodation2: Accommodation = {
+      address: 'Vilniaus g. 26a, Kaunas',
+      squares: 64,
+      type: 'Flat',
+    };
+
+    console.log('Encapsulating accomodation2:', JSON.stringify(accomodation2, null, 4));
+    const encapsulatedAccomodation2 = encapsulateAccomodation(accomodation2);
+    console.log('Changing properties using setters...');
+    encapsulatedAccomodation2.setSquares(110);
+    encapsulatedAccomodation2.setType('House');
+    console.log('using getters after changes', {
+      'getAddress()': encapsulatedAccomodation2.getAddress(),
+      'getSquares()': encapsulatedAccomodation2.getSquares(),
+      'getType()': encapsulatedAccomodation2.getType(),
+    });
+
+    console.log(encapsulatedAccomodation1);
   }
   console.groupEnd();
 }
 console.groupEnd();
+
+// 10:30
+
+type NameLt = 'Pienius' | 'Serbentautas' | 'KLiaudainis' | 'Verundijus';
+type SurnameLt = 'Kelpokas' | 'Bauda' | 'Penktokas';
+type FullnameLt = `${NameLt} ${SurnameLt}`;
